@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
-import { submitGlobalScore, fetchGlobalLeaderboard } from "./firebase";
+import { db, submitGlobalScore, fetchGlobalLeaderboard } from "./firebase";
 
 const diceEmoji = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 
@@ -12,16 +12,19 @@ export default function App() {
   const [result, setResult] = useState("");
   const [mode, setMode] = useState("high");
   const [isRolling, setIsRolling] = useState(false);
-  const [localScores, setLocalScores] = useState({});
+  const [playerStats, setPlayerStats] = useState({ wins: 0, losses: 0 });
   const [globalScores, setGlobalScores] = useState([]);
 
   useEffect(() => {
     const savedName = Cookies.get("dicePlayer");
-    const savedScores = Cookies.get("diceScores");
     if (savedName) setName(savedName);
-    if (savedScores) setLocalScores(JSON.parse(savedScores));
     fetchGlobalLeaderboard("dice_leaderboard").then(setGlobalScores);
   }, []);
+
+  useEffect(() => {
+    const found = globalScores.find((entry) => entry.name === name);
+    if (found) setPlayerStats(found);
+  }, [globalScores, name]);
 
   const saveName = () => {
     const trimmed = nameInput.trim();
@@ -38,17 +41,14 @@ export default function App() {
     setResult("");
   };
 
-  const updateLocalScore = (win, loss) => {
+  const updateScore = (win, loss) => {
     const updated = {
-      ...localScores,
-      [name]: {
-        wins: (localScores[name]?.wins || 0) + win,
-        losses: (localScores[name]?.losses || 0) + loss,
-      },
+      name,
+      wins: playerStats.wins + win,
+      losses: playerStats.losses + loss,
     };
-    setLocalScores(updated);
-    Cookies.set("diceScores", JSON.stringify(updated));
-    submitGlobalScore("dice_leaderboard", name, updated[name]);
+    setPlayerStats(updated);
+    submitGlobalScore("dice_leaderboard", name, updated);
     fetchGlobalLeaderboard("dice_leaderboard").then(setGlobalScores);
   };
 
@@ -84,10 +84,10 @@ export default function App() {
             (mode === "low" && finalPlayerRoll < finalComputerRoll);
           if (playerWins) {
             setResult("You win!");
-            updateLocalScore(1, 0);
+            updateScore(1, 0);
           } else {
             setResult("You lose!");
-            updateLocalScore(0, 1);
+            updateScore(0, 1);
           }
         }
         setIsRolling(false);
@@ -113,7 +113,7 @@ export default function App() {
     );
   }
 
-  const { wins = 0, losses = 0 } = localScores[name] || {};
+  const { wins = 0, losses = 0 } = playerStats;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
@@ -163,18 +163,6 @@ export default function App() {
       <button onClick={logout} className="bg-gray-700 px-4 py-2 rounded hover:bg-gray-800 mb-6">
         Switch Player
       </button>
-
-      <h2 className="text-2xl font-bold mb-2">Local Leaderboard</h2>
-      <ul className="mb-4">
-        {Object.entries(localScores)
-          .sort(([, a], [, b]) => (b.wins - b.losses) - (a.wins - a.losses))
-          .map(([player, score]) => (
-            <li key={player} className="text-sm">
-              {player}: {score.wins}W / {score.losses}L &nbsp;
-              <span className="text-yellow-400 font-semibold">(Net: {score.wins - score.losses})</span>
-            </li>
-        ))}
-      </ul>
 
       <h2 className="text-2xl font-bold mb-2">Global Leaderboard</h2>
       <ul>
