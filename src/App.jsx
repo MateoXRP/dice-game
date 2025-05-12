@@ -164,7 +164,7 @@ export default function App() {
         Switch Player
       </button>
 
-      <h2 className="text-2xl font-bold mb-2">Global Leaderboard</h2>
+      <h2 className="text-2xl font-bold mb-2">🌍 Global Leaderboard</h2>
       <ul>
         {globalScores.map((player) => (
           <li key={player.name} className="text-sm">
