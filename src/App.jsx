@@ -53,18 +53,24 @@ export default function App() {
   };
 
   const animateRoll = (callback, onComplete) => {
-    let count = 0;
-    const interval = setInterval(() => {
-      const roll = Math.ceil(Math.random() * 6);
-      callback(roll);
-      count++;
-      if (count >= 10) {
-        clearInterval(interval);
+    let steps = 20;
+    let currentStep = 0;
+
+    const animate = () => {
+      if (currentStep < steps) {
+        const roll = Math.ceil(Math.random() * 6);
+        callback(roll);
+        currentStep++;
+        const delay = 50 + currentStep * 20; // gradual slowdown
+        setTimeout(animate, delay);
+      } else {
         const final = Math.ceil(Math.random() * 6);
         callback(final);
         if (onComplete) onComplete(final);
       }
-    }, 100);
+    };
+
+    animate();
   };
 
   const playGame = () => {
@@ -119,7 +125,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-4">🎲 Dice Game</h1>
-      <p className="mb-2">Welcome, <span className="font-semibold text-yellow-400">{name}</span></p>
+      <p className="mb-2">
+        Welcome, <span className="font-semibold text-yellow-400">{name}</span>
+      </p>
 
       <div className="flex items-center space-x-4 mb-4">
         <label>
@@ -151,8 +159,12 @@ export default function App() {
       </button>
 
       <div className="text-xl mb-4">
-        <p>You rolled: <span className="text-5xl">{diceEmoji[playerRoll] || "-"}</span></p>
-        <p>Computer rolled: <span className="text-5xl">{diceEmoji[computerRoll] || "-"}</span></p>
+        <p>
+          You rolled: <span className="text-5xl">{diceEmoji[playerRoll] || "-"}</span>
+        </p>
+        <p>
+          Computer rolled: <span className="text-5xl">{diceEmoji[computerRoll] || "-"}</span>
+        </p>
         <p className="mt-2 text-yellow-300 font-semibold">{result}</p>
       </div>
 
