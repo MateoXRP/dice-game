@@ -61,7 +61,7 @@ export default function App() {
         const roll = Math.ceil(Math.random() * 6);
         callback(roll);
         currentStep++;
-        const delay = 50 + currentStep * 20; // gradual slowdown
+        const delay = 50 + currentStep * 20;
         setTimeout(animate, delay);
       } else {
         const final = Math.ceil(Math.random() * 6);
@@ -123,7 +123,7 @@ export default function App() {
   const { wins = 0, losses = 0 } = playerStats;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-4">🎲 Dice Game</h1>
       <p className="mb-2">
         Welcome, <span className="font-semibold text-yellow-400">{name}</span>
